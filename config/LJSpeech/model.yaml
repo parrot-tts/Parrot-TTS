@@ -1,0 +1,24 @@
+transformer:
+  encoder:
+    n_layer: 4
+    n_head: 2
+    dropout_p: 0.1
+  decoder:
+    n_layer: 6
+    n_head: 2
+    dropout_p: 0.1
+  d_model: 256
+  conv_n_filter: 1024
+  conv_kernel_sizes: [9,1]
+  max_len: 2000
+
+duration_predictor:
+  n_filter: 256
+  kernel_size: 3
+  dropout_p: 0.5
+
+vocoder:
+  fairseq: True
+  config_path: "data/vocoder_checkpoints/config.json"
+  vocoder_ckpt: "data/vocoder_checkpoints/LJ_layer_6_km100_g_00500000"
+
