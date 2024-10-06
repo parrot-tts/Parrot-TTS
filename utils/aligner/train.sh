@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to directory containing speakers: their audio and text files
-base_dataset_dir="/media/newhddd/SpeechDatasets/TTS/syspin/remaining_files_16000"
+base_dataset_dir="/media/newhddd/SpeechDatasets/TTS/syspin/files_16000"
 
 # Path to store alignments, checkpoints, tokens, logs
 base_data_dir="runs/aligner"

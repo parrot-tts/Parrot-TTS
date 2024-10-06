@@ -1,0 +1,10 @@
+torch==2.4.1
+torchvision
+torchaudio
+lightning==2.3.3
+langdetect
+ipython
+unidecode
+librosa
+amfm_decompy
+matplotlib

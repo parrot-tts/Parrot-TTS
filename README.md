@@ -1,14 +1,27 @@
 # Parrot-TTS
 
+# Libraries installation
+    ```
+    conda create --name parrottts python=3.8.19
+    conda activate parrottts
+    pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu125
+    ```
 
+# To run a demo using pre-trained models available at runs, go to "demo.ipynb". This repo has pre-trained models available at:
+    ```
+    runs/TTE/ckpt : Model to convert text tokens to HuBERT units
+    runs/vocoder/checkpoints : Model to predict speech from HuBERT units
+    ```
+
+# To train Parrot-TTS on your data. Please refer below steps (1-10)
 # Step 1 :
-- Compute unique symbols/character across all the speaker. The code first cleans text files per speaker. Stores it seperately and then computes unique characters found across all speakers
+- Compute unique symbols/character across all the speaker. Change data folder in "utils/aligner/aligner_preprocessor_config.yaml". The code first cleans text files per speaker. Stores it seperately and then computes unique characters found across all speakers
     ```
     python utils/aligner/preprocessor.py utils/aligner/aligner_preprocessor_config.yaml
     ```
 
 # Step 2 :
-- Train aligner for every speaker.
+- Train aligner for every speaker. Change base_dataset_dir in train.sh.
     ```
     bash utils/aligner/train.sh
     ```

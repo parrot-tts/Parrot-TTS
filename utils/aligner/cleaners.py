@@ -33,6 +33,7 @@ _abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in 
     ('ltd', 'limited'),
     ('col', 'colonel'),
     ('ft', 'fort'),
+    ('tts', 'text to speech'),
 ]]
 
 
