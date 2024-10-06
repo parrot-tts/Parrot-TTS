@@ -8,3 +8,4 @@ unidecode
 librosa
 amfm_decompy
 matplotlib
+gdown

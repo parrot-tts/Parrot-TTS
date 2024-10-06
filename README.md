@@ -7,7 +7,7 @@
     pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu125
     ```
 
-# To run a demo using pre-trained models available at runs, go to "demo.ipynb". This repo has pre-trained models available at:
+# To run a demo using pre-trained models available at runs, go to "demo.ipynb". The pre-trained models available at:
     ```
     runs/TTE/ckpt : Model to convert text tokens to HuBERT units
     runs/vocoder/checkpoints : Model to predict speech from HuBERT units

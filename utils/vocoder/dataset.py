@@ -203,7 +203,10 @@ class CodeDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         filename = self.audio_files[index]
+        print(f"----- filename: {filename}")
         if self._cache_ref_count == 0:
+                
+            # filename = "/media/newhd/Neil/Parrot-TTS/utils/vocoder/random.wav"
             audio, sampling_rate = load_audio(filename)
 
             if self.pad:
