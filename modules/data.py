@@ -1,11 +1,9 @@
-from pathlib import Path
 import json 
 import numpy as np
 from pathlib import Path
-
 import torch
+import pickle
 from torch.utils.data import Dataset
-from utils import ArpabetTokenizer
 
 def get_mask_from_lengths(lengths, max_len=None, device=None):
     lengths = torch.tensor(lengths)
@@ -21,21 +19,53 @@ def get_mask_from_lengths(lengths, max_len=None, device=None):
 
     return mask
 
-
 def get_mask_from_batch(batch, pad_idx):
     return (batch != pad_idx)
 
 def convert_arr_to_tensor(arr, dtype):
     return torch.tensor(arr, dtype=dtype)
     
+class DFATokenizer: 
+    pad = "<pad>"
+    sep = "<sep>"
 
+    def __init__(self,alignment_path):
+        
+        # get symbols from DFA training
+        with open(alignment_path / "symbols.pkl", "rb") as f: 
+                symbol_dict = pickle.load(f)
+        
+        if isinstance(symbol_dict, dict):
+            loaded_symbols = list(symbol_dict.keys())
+        elif isinstance(symbol_dict, list):
+            loaded_symbols = symbol_dict
+        else:
+            print(f"Unexpected data type: {type(symbol_dict)}")
+
+        # Replace ' ' with silence token
+        if ' ' in loaded_symbols:
+            index = loaded_symbols.index(' ')  # Find the index of the old_value
+            loaded_symbols[index] = 'sil'  # Replace it with the new_value
+            
+        self.symbols = ([self.pad, self.sep]+ loaded_symbols)
+
+        self.stoi = {s: i for (i,s) in enumerate(self.symbols)}
+        self.itos = {i: s for (i,s) in enumerate(self.symbols)}
+        self.pad_idx = self.stoi[self.pad]
+        self.sep_idx = self.stoi[self.sep]
+
+    def __len__(self):
+        return len(self.symbols)
+
+    def tokenize(self, phoneme_seq):
+        return [self.stoi[s] for s in phoneme_seq]
+    
 class ParrotDataset(Dataset):
     def __init__(self, split, data_config):
-        assert split in ["train", "val"]
         self.root_dir = Path(data_config["path"]["root_path"])
         self.data_file = self.root_dir / f"{split}.txt"
         self.data_list = list()
-        self.tokenizer = ArpabetTokenizer()
+        self.tokenizer = DFATokenizer(Path(data_config["path"]["alignment_path"]))
         self.src_vocab_size = len(self.tokenizer)
         self.src_pad_idx = self.tokenizer.pad_idx
         self.code_pad_idx = data_config["preprocess"]["hubert_codes"]
@@ -57,7 +87,7 @@ class ParrotDataset(Dataset):
         data_dict = self.data_list[idx]
         basename = Path(data_dict['audio']).stem
         speaker_id = self.speaker_map[data_dict['speaker']]
-        phones = self.tokenizer.tokenize(data_dict['phones'].split(' '))
+        phones = self.tokenizer.tokenize(data_dict['characters'].split(' '))
         codes = [int(i) for i in data_dict['hubert'].split(' ')]
         durations = [int(i) for i in data_dict['duration'].split(' ')]
         
@@ -88,6 +118,3 @@ class ParrotDataset(Dataset):
         data['tgt_mask'] = get_mask_from_batch(data['codes'], self.code_pad_idx)
 
         return data
-
-        
-        

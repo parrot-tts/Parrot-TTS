@@ -1,0 +1,3 @@
+path:
+  root_dir: runs/aligner
+  dataset_dir: /media/newhddd/SpeechDatasets/TTS/syspin/files_16000 # Folder containing all speakers. each speaker contains wavs and txt folder

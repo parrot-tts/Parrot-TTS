@@ -1,0 +1,45 @@
+path:
+  root_path: "runs/TTE" # path to store checkpoints, predictions
+  wav_path: "/media/newhddd/SpeechDatasets/TTS/syspin/files_16000"
+  log_path: "runs/TTE/logs"
+  alignment_path: "runs/aligner"
+  hubert_path: "runs/hubert_extraction/hubert.txt"
+
+preprocess:
+  val_size: 100
+  hubert_codes: 1000
+  speaker: "_" # '_' for multispeaker or 'single'
+
+transformer:
+  encoder:
+    n_layer: 4
+    n_head: 2
+    dropout_p: 0.1
+  decoder:
+    n_layer: 4
+    n_head: 2
+    dropout_p: 0.1
+  d_model: 256
+  conv_n_filter: 1024
+  conv_kernel_sizes: [9,1]
+  max_len: 3500
+
+duration_predictor:
+  n_filter: 256
+  kernel_size: 3
+  dropout_p: 0.5
+
+optimizer:
+  init_lr: 0.0001
+  betas: [0.9, 0.98]
+  weight_decay: 0.0
+
+train: 
+  warmup_steps: 2000
+  total_steps: 50000
+  log_every: 10
+  val_every: 1000
+  save_every: 1000
+  batch_size: 6
+  grad_acc_steps: 4
+  grad_clip: 1.0

@@ -1,0 +1,36 @@
+paths:
+  dataset_dir: /media/newhddd/SpeechDatasets/TTS/syspin/files_16000/en_m
+  data_dir: runs/aligner/en_m
+  symbols_path: runs/aligner/symbols.pkl
+  metadata_path: wavs           
+  dur_path: None 
+   
+audio:
+  sample_rate: 16000
+  n_filters: 1024
+  n_mels: 80
+  win_length: 1024
+  hop_length: 320
+  fmin: 0
+  fmax: 8000
+  power: 1
+
+preprocessing:
+  mel_dim_last: false 
+
+model:
+  lstm_dim: 512
+  conv_dim: 512
+
+durations:
+  method: 'dijkstra' # options: [dijkstra, beam]
+
+training:
+  learning_rate: 0.0001
+  batch_size: 16
+  epochs: 450
+  plot_steps: 1000
+  checkpoint_steps: 10_000
+
+device:
+  id: "cuda:0"  # Specify your device here

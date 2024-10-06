@@ -10,12 +10,12 @@ from modules.duration import DurationPredictor, length_regulator
 
 
 class Parrot(nn.Module):
-    def __init__(self, data_config, model_config, src_vocab_size, src_pad_idx):
+    def __init__(self, data_config, src_vocab_size, src_pad_idx):
         super().__init__()
-        self.max_len = model_config["transformer"]["max_len"]
-        self.d_model = model_config["transformer"]["d_model"]
-        transformer_config = model_config["transformer"]
-        duration_p_config = model_config["duration_predictor"]
+        self.max_len = data_config["transformer"]["max_len"]
+        self.d_model = data_config["transformer"]["d_model"]
+        transformer_config = data_config["transformer"]
+        duration_p_config = data_config["duration_predictor"]
 
         self.pos_emb = SinusoidalPosEmb(self.max_len, self.d_model)
         self.tok_emb = nn.Embedding(src_vocab_size, self.d_model, src_pad_idx)

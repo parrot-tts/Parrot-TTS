@@ -10,7 +10,6 @@ import argparse
 from pathlib import Path
 import math
 
-
 def get_cosine_schedule_with_warmup(
     optimizer,
     num_warmup_steps: int,
@@ -54,18 +53,22 @@ def get_cosine_schedule_with_warmup(
 
 
 class LitParrot(L.LightningModule):
+    
+    # define model architecture
     def __init__(
-        self, data_config, model_config, train_config, src_vocab_size, src_pad_idx
+        self, data_config, src_vocab_size, src_pad_idx
     ):
         super().__init__()
         self.save_hyperparameters()
-        self.train_config = train_config
-        self.parrot = Parrot(data_config, model_config, src_vocab_size, src_pad_idx)
+        self.train_config = data_config
+        self.parrot = Parrot(data_config, src_vocab_size, src_pad_idx)
         self.loss_fn = ModelLoss(data_config)
 
+    # forward defines the prediction/inference actions
     def forward(self, batch, inference=False):
         return self.parrot(batch, inference=inference)
 
+    # Training logic, calculate loss, and send logs to tensorboard and return loss
     def training_step(self, batch, batch_idx):
         out, _, _, log_dur_preds = self.parrot(batch)
         total_loss, code_loss, dur_loss = self.loss_fn(out, log_dur_preds, batch)
@@ -75,8 +78,13 @@ class LitParrot(L.LightningModule):
         self.log("train_dur_loss", dur_loss, prog_bar=True)
 
         self.log("lr", self.trainer.optimizers[0].param_groups[0]['lr'], prog_bar=False, rank_zero_only=True)
+
+        # Clear GPU cache after every training step (if needed)
+        torch.cuda.empty_cache()
+        
         return total_loss
 
+    # Validation logic, calculate loss, and send logs to tensorboard and return loss
     def validation_step(self, batch, batch_idx):
         out, _, _, log_dur_preds = self.parrot(batch)
         total_loss, code_loss, dur_loss = self.loss_fn(out, log_dur_preds, batch)
@@ -86,6 +94,7 @@ class LitParrot(L.LightningModule):
         self.log("val_dur_loss", dur_loss, prog_bar=True, sync_dist=True)
         return total_loss
 
+    # define optimizers and schedulers
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
             self.parrot.parameters(), 
@@ -106,15 +115,13 @@ class LitParrot(L.LightningModule):
 
 
 def main(args):
-    data_config = yaml.load(open(args.data_config, "r"), Loader=yaml.FullLoader)
-    model_config = yaml.load(open(args.model_config, "r"), Loader=yaml.FullLoader)
-    train_config = yaml.load(open(args.train_config, "r"), Loader=yaml.FullLoader)
+    data_config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
 
     # setup datasets
     train_dataset = ParrotDataset("train", data_config=data_config)
     train_loader = DataLoader(
         train_dataset,
-        batch_size=train_config["train"]["batch_size"],
+        batch_size=data_config["train"]["batch_size"],
         shuffle=True,
         collate_fn=train_dataset.collate_fn,
         num_workers=4,
@@ -123,46 +130,51 @@ def main(args):
     val_dataset = ParrotDataset("val", data_config=data_config)
     val_loader = DataLoader(
         val_dataset,
-        batch_size=train_config["train"]["batch_size"],
+        batch_size=data_config["train"]["batch_size"],
         collate_fn=val_dataset.collate_fn,
         num_workers=4,
     )
     src_vocab_size = train_dataset.src_vocab_size
     src_pad_idx = train_dataset.src_pad_idx
 
-    lit_parrot = LitParrot(data_config, model_config, train_config ,src_vocab_size, src_pad_idx)
+    # Init the lightning module
+    lit_parrot = LitParrot(data_config ,src_vocab_size, src_pad_idx)
 
     # set up some model callbacks
     checkpoint_callback = ModelCheckpoint(
-        save_top_k=1,
+        save_top_k=-1,
         monitor="val_total_loss",
         filename="parrot_model-{step}-{val_total_loss_step:.2f}",
         mode="min",
-        dirpath=train_config["path"]["ckpt_path"],
-        every_n_train_steps=train_config["train"]["save_every"],
+        dirpath=data_config["path"]["root_path"]+"/ckpt",
+        every_n_train_steps=data_config["train"]["save_every"],
     )
 
-    log_path = Path(train_config["path"]["log_path"])
+    log_path = Path(data_config["path"]["root_path"]) / "logs"
     tb_logger = pl_loggers.TensorBoardLogger(save_dir=log_path / "tensorboard_logs")
     csv_logger = pl_loggers.CSVLogger(save_dir=log_path / "csv_logs")
 
+    # automates all the hardware engineering
     trainer = L.Trainer(
         accelerator="gpu",
         strategy="auto",
         devices=args.num_gpus,
         callbacks=[checkpoint_callback],
-        max_steps=train_config["train"]["total_steps"],
-        val_check_interval=train_config["train"]["val_every"],
+        max_steps=data_config["train"]["total_steps"],
+        val_check_interval=data_config["train"]["val_every"],
         check_val_every_n_epoch=None,
-        log_every_n_steps=train_config["train"]["log_every"],
-        accumulate_grad_batches=train_config["train"]["grad_acc_steps"],
-        gradient_clip_val=train_config["train"]["grad_clip"],
+        log_every_n_steps=data_config["train"]["log_every"],
+        accumulate_grad_batches=data_config["train"]["grad_acc_steps"],
+        gradient_clip_val=data_config["train"]["grad_clip"],
         deterministic=True,
-        default_root_dir=train_config["path"]["log_path"],
+        default_root_dir=data_config["path"]["log_path"],
         logger=[tb_logger, csv_logger],
     )
 
-    # TODO: add code for resuming, dry run
+    # Clear GPU cache before starting training
+    torch.cuda.empty_cache()
+
+    # add pytorch dataloader
     trainer.fit(
         model=lit_parrot, train_dataloaders=train_loader, val_dataloaders=val_loader
     )
@@ -170,12 +182,9 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_config", type=str)
-    parser.add_argument("--model_config", type=str)
-    parser.add_argument("--train_config", type=str)
-
+    parser.add_argument("--config", type=str)
     parser.add_argument("--checkpoint_pth", type=str, default=None)
-    parser.add_argument("--num_gpus", type=int, default=None)
+    parser.add_argument("--num_gpus", type=int, default=2)
 
     args = parser.parse_args()
     L.seed_everything(42, workers=True)
