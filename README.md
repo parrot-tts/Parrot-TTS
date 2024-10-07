@@ -44,12 +44,12 @@ To train Parrot-TTS on your dataset, follow these steps (1-10):
 
 ### Step 3: Extract HuBERT Units
 
-- Download the HuBERT checkpoint and quantizer from [this link](https://github.com/facebookresearch/fairseq/blob/main/examples/speech_to_speech/docs/textless_s2st_real_data.md) and store them in `utils/hubert_extraction`. Once downloaded, the following command can be run. For convenience, the HuBERT units have already been extracted using the above model and available at https://drive.google.com/file/d/1kMPqObD9QlVmN3JzaUZ0jUJGBbFtEyrG/view?usp=drive_link. Download and save it at `runs/hubert_extraction`. Note: You may need to clone and install fairseq to run this step. 
+- Download the HuBERT checkpoint and quantizer from [this link](https://github.com/facebookresearch/fairseq/blob/main/examples/speech_to_speech/docs/textless_s2st_real_data.md) and store them in `utils/hubert_extraction`. Once downloaded, the following command can be run. Note: You may need to clone and install fairseq to run this step. 
 - Run the following command to extract HuBERT units:
     ```bash
     python utils/hubert_extraction/extractor.py utils/hubert_extraction/hubert_config.yaml
     ```
-- Note: HuBERT units have already been extracted and are available at [this Google Drive link](https://drive.google.com/file/d/1kMPqObD9QlVmN3JzaUZ0jUJGBbFtEyrG/view?usp=drive_link).
+- Note: HuBERT units have already been extracted and are available at [this Google Drive link](https://drive.google.com/file/d/1kMPqObD9QlVmN3JzaUZ0jUJGBbFtEyrG/view?usp=drive_link). Download and save it at `runs/hubert_extraction`.
 
 ### Step 4: Create Files for TTE Training
 
