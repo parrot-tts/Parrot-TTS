@@ -209,7 +209,7 @@ def nonenglish_cleaners_no_transliteration(input_text):
         input_text=input_text.replace(str(char),'')
     
     # Define unwanted characters to remove
-    unwanted_chars = ['—','–','…','“', '”','%','+','=','[',']','^','\\','{','}', '_', '`', '‘', '’', '@', '/', '-', "'",'>','<', '(', ')', '*', '"', ':', ';', '!']
+    unwanted_chars = ['—','⇒',"'",'–','…','“', '”','%','+','=','[',']','^','\\','{','}', '_', '`', '‘', '’', '@', '/', '-', "'",'>','<', '(', ')', '*', '"', ':', ';', '!']
 
     # Remove specific unwanted characters
     for char in unwanted_chars:
@@ -220,8 +220,13 @@ def nonenglish_cleaners_no_transliteration(input_text):
     # Replace numerals
     input_text = replace_devanagari_numbers(input_text)
 
-    input_text = input_text.replace("\x92", "'")
-    input_text = input_text.replace("\xad", "")
+    input_text = input_text.replace("\x92", '')
+    input_text = input_text.replace("\xad", '')
+    input_text = input_text.replace('\x10', '')
+    input_text = input_text.replace('\x13', '')
+    input_text = input_text.replace('\x14', '')
+    input_text = input_text.replace('\x16', '')
+    input_text = input_text.replace('\x91', '')
 
     # Remove extra spaces
     input_text = ' '.join(input_text.split())
