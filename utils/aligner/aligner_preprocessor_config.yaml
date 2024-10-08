@@ -1,3 +1,6 @@
 path:
   root_dir: runs/aligner
   dataset_dir: /media/newhddd/SpeechDatasets/TTS/syspin/files_16000 # Folder containing all speakers. each speaker contains wavs and txt folder. for example files_16000/en_f/wavs and  files_16000/en_f/txt
+
+non_en_preprocess:
+  do_transliteration: False # make it true if want to do transliteration of non-english characters to english characters

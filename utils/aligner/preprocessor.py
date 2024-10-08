@@ -1,18 +1,19 @@
 import argparse
 from pathlib import Path
 import yaml
-import os
+import shutil
 import pickle
 import random
 from typing import List
 from langdetect import detect
-from cleaners import english_cleaners, nonenglish_cleaners
+from cleaners import english_cleaners, nonenglish_cleaners, nonenglish_cleaners_no_transliteration
 
 class Preprocessor:
     def __init__(self, config):
         self.config = config
         self.root_dir = Path(config["path"]["root_dir"])
         self.dataset_dir = Path(config["path"]["dataset_dir"])
+        self.do_transliteration = config["non_en_preprocess"]["do_transliteration"]
         
     @staticmethod
     def get_files(path: str, extension='.txt') -> List[Path]:
@@ -77,12 +78,13 @@ class Preprocessor:
             
             # Declare path to store cleaned text files
             clean_speaker_dir = speaker / 'clean_txt'
-            clean_speaker_dir.mkdir(parents=True, exist_ok=True)
-    
+            shutil.rmtree(clean_speaker_dir, ignore_errors=True) or clean_speaker_dir.mkdir(parents=True, exist_ok=True)
+
             # Clean each text and store it at clean_speaker_dir
             print(f"    Cleaning text files for speaker {speaker}")
             for id, text in text_dict.items():
-                cleaned_text = english_cleaners(text) if use_englishcleaners else nonenglish_cleaners(text)
+                cleaners = english_cleaners if use_englishcleaners else nonenglish_cleaners_no_transliteration if not self.do_transliteration else nonenglish_cleaners
+                cleaned_text = cleaners(text)
                 with open(clean_speaker_dir / f"{id}.txt", 'w') as f:
                     f.write(cleaned_text)
                     

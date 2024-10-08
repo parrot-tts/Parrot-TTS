@@ -36,6 +36,12 @@ _abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in 
     ('tts', 'text to speech'),
 ]]
 
+hindi_numbers = {
+    0: 'शून्य', 1: 'एक', 2: 'दो', 3: 'तीन', 4: 'चार', 5: 'पाँच', 6: 'छह', 7: 'सात', 8: 'आठ', 9: 'नौ',
+    10: 'दस', 11: 'ग्यारह', 12: 'बारह', 13: 'तेरह', 14: 'चौदह', 15: 'पंद्रह', 16: 'सोलह', 17: 'सत्रह', 18: 'अठारह', 19: 'उन्नीस',
+    20: 'बीस', 30: 'तीस', 40: 'चालीस', 50: 'पचास', 60: 'साठ', 70: 'सत्तर', 80: 'अस्सी', 90: 'नब्बे',
+    100: 'सौ', 200: 'दो सौ', 300: 'तीन सौ', 400: 'चार सौ', 500: 'पाँच सौ', 600: 'छह सौ', 700: 'सात सौ', 800: 'आठ सौ', 900: 'नौ सौ'
+}
 
 def expand_abbreviations(text):
     for regex, replacement in _abbreviations:
@@ -158,3 +164,66 @@ def nonenglish_cleaners(input_text):
     cleaned_text = ' '.join(cleaned_text.split())
 
     return cleaned_text
+
+def number_to_hindi(num):
+    if num in hindi_numbers:
+        return hindi_numbers[num]
+    
+    if num < 100:  # For numbers between 21-99
+        tens = (num // 10) * 10
+        ones = num % 10
+        return hindi_numbers[tens] + ' ' + hindi_numbers[ones]
+    
+    if num < 1000:  # For numbers between 101-999
+        hundreds = (num // 100) * 100
+        remainder = num % 100
+        if remainder == 0:
+            return hindi_numbers[hundreds]
+        else:
+            return hindi_numbers[hundreds] + ' ' + number_to_hindi(remainder)
+        
+def replace_devanagari_numbers(text):
+    # Pattern to find numbers in Devanagari
+    devanagari_num_pattern = r'[०१२३४५६७८९]+'
+    
+    # Function to convert Devanagari number string to an integer
+    def devanagari_to_int(dev_num):
+        devanagari_numerals = {'०': '0', '१': '1', '२': '2', '३': '3', '४': '4', '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'}
+        num_str = ''.join([devanagari_numerals[c] for c in dev_num])
+        return int(num_str)
+
+    # Replace each Devanagari number in the text
+    def replace_match(match):
+        devanagari_num = match.group(0)
+        number = devanagari_to_int(devanagari_num)
+        return number_to_hindi(number)
+
+    # Substitute Devanagari numbers with their Hindi word equivalents
+    return re.sub(devanagari_num_pattern, replace_match, text)
+
+def nonenglish_cleaners_no_transliteration(input_text):
+    '''Pipeline for Non English text, with no transliterations'''
+    input_text = collapse_whitespace(input_text)
+     
+    for char in ['0','1','2','3','4','5','6','7','8','9']:
+        input_text=input_text.replace(str(char),'')
+    
+    # Define unwanted characters to remove
+    unwanted_chars = ['—','–','…','“', '”','%','+','=','[',']','^','\\','{','}', '_', '`', '‘', '’', '@', '/', '-', "'",'>','<', '(', ')', '*', '"', ':', ';', '!']
+
+    # Remove specific unwanted characters
+    for char in unwanted_chars:
+        input_text = input_text.replace(char, '')
+        
+    input_text = input_text.replace('|','.')
+
+    # Replace numerals
+    input_text = replace_devanagari_numbers(input_text)
+
+    input_text = input_text.replace("\x92", "'")
+    input_text = input_text.replace("\xad", "")
+
+    # Remove extra spaces
+    input_text = ' '.join(input_text.split())
+
+    return input_text
