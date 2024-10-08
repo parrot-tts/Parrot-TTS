@@ -10,3 +10,4 @@ amfm_decompy
 matplotlib
 gdown
 inflect
+tensorboard
