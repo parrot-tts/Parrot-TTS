@@ -156,13 +156,6 @@ def inference(item_index):
     else:
         fname_out_name = Path(filename).stem
 
-    new_code = dict(code)
-
-    audio, rtf = generate(h, generator, new_code)
-    output_file = os.path.join(a.output_dir, fname_out_name + '_gen.wav')
-    audio = librosa.util.normalize(audio.astype(np.float32))
-    # write(output_file, h.sampling_rate, audio)
-
     if h.get('multispkr', None) and a.vc:
         
         spkr_to_id = {'bho_f': 0, 'bho_m': 1, 'en_f': 2, 'en_m': 3, 'gu_f': 4, 'gu_m': 5, 'hi_f': 6, 'hi_m': 7, 'kn_f': 8, 'kn_m': 9}
@@ -178,10 +171,10 @@ def inference(item_index):
             audio = librosa.util.normalize(audio.astype(np.float32))
             write(output_file, h.sampling_rate, audio)
 
-    # if gt_audio is not None:
-    #     output_file = os.path.join(a.output_dir, fname_out_name + '_gt.wav')
-    #     gt_audio = librosa.util.normalize(gt_audio.squeeze().numpy().astype(np.float32))
-    #     write(output_file, h.sampling_rate, gt_audio)
+    if gt_audio is not None:
+        output_file = os.path.join(a.output_dir, fname_out_name + '_gt.wav')
+        gt_audio = librosa.util.normalize(gt_audio.squeeze().numpy().astype(np.float32))
+        write(output_file, h.sampling_rate, gt_audio)
 
 
 def main():

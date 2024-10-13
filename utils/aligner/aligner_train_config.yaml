@@ -1,6 +1,6 @@
 paths:
-  dataset_dir: /media/newhddd/SpeechDatasets/TTS/syspin/files_16000
-  data_dir: runs/aligner
+  dataset_dir: /media/newhddd/SpeechDatasets/TTS/syspin/files_16000/kn_m
+  data_dir: runs/aligner/kn_m
   symbols_path: runs/aligner/symbols.pkl
   metadata_path: wavs           
   dur_path: None 

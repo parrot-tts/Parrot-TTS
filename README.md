@@ -17,9 +17,9 @@ Parrot-TTS is a text-to-speech (TTS) system that utilizes a Transformer based se
 
 ## Running a Demo
 
-Run a demo using the provided Jupyter notebook, `demo.ipynb`
+Run a demo using the provided Jupyter notebook, `demo.ipynb`. The checkpoints are trained on training data available from https://sites.google.com/view/limmits25/home?authuser=0
 
-- The notebook will automatically download the following files from Google Drive:
+- The notebook will automatically download the following files from Google Drive and store at following locations:
     - `runs/aligner/symbol.pkl`: A dictionary to map characters to tokens.
     - `runs/TTE/ckpt`: Model to convert character text tokens to HuBERT units.
     - `runs/vocoder/checkpoints`: Model to predict speech from HuBERT units.
@@ -30,7 +30,7 @@ To train Parrot-TTS on your dataset, follow these steps (1-10):
 
 ### Step 1: Compute Unique Symbols/Characters
 
-- Update the `dataset_dir` folder in `utils/aligner/aligner_preprocessor_config.yaml`. The `dataset_dir` contains individual speakers and within it contains their `wavs` and `txt` files. The code cleans text files per speaker, stores them separately, and computes unique characters across all speakers.
+- Update the `dataset_dir` folder in `utils/aligner/aligner_preprocessor_config.yaml`. The `dataset_dir` contains individual speakers and within it contains their `wavs` and `txt` files. The code cleans text files per speaker, stores them separately, and computes unique characters across all speakers. For non-english speakers, make sure to check `do_transliteration` flag in `utils/aligner/aligner_preprocessor_config.yaml`.
     ```bash
     python utils/aligner/preprocessor.py utils/aligner/aligner_preprocessor_config.yaml
     ```
@@ -49,7 +49,7 @@ To train Parrot-TTS on your dataset, follow these steps (1-10):
     ```bash
     python utils/hubert_extraction/extractor.py utils/hubert_extraction/hubert_config.yaml
     ```
-- Note: HuBERT units have already been extracted and are available at [this Google Drive link](https://drive.google.com/file/d/1kMPqObD9QlVmN3JzaUZ0jUJGBbFtEyrG/view?usp=drive_link). Download and save it at `runs/hubert_extraction`.
+- Note: HuBERT units have already been extracted for the corpus and are available at [this Google Drive link](https://drive.google.com/file/d/1kMPqObD9QlVmN3JzaUZ0jUJGBbFtEyrG/view?usp=drive_link). Download and save it at `runs/hubert_extraction`.
 
 ### Step 4: Create Files for TTE Training
 
@@ -69,7 +69,7 @@ To train Parrot-TTS on your dataset, follow these steps (1-10):
 
 - Run inference to predict HuBERT from the trained TTE module:
     ```bash
-    python inference.py --config utils/TTE/TTE_config.yaml --checkpoint_pth runs/TTE/ckpt/parrot_model-step=11000-val_total_loss_step=0.00.ckpt --device cuda:2
+    python inference.py --config utils/TTE/TTE_config.yaml --checkpoint_pth runs/TTE/ckpt/parrot_model-step=50000-val_total_loss_step=0.00.ckpt --device cuda:2
     ```
 
 ### Step 7: Create Training and Validation Files for Vocoder
@@ -97,7 +97,7 @@ To train Parrot-TTS on your dataset, follow these steps (1-10):
 
 - Infer the vocoder on predictions from the TTE module:
     ```bash
-    python utils/vocoder/inference.py --checkpoint_file runs/vocoder/checkpoints -n 100 --vc --input_code_file runs/TTE/predictions.txt --output_dir runs/vocoder/generations_tte
+    python utils/vocoder/inference.py --checkpoint_file runs/vocoder/checkpoints --vc --input_code_file runs/TTE/predictions.txt --output_dir runs/vocoder/generations_tte
     ```
 
 ## Acknowledgements
