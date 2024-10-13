@@ -93,10 +93,8 @@ def init_worker(queue, arguments):
     idx = queue.get()
     device = idx
 
-    if os.path.isdir(a.checkpoint_file):
-        config_file = os.path.join(a.checkpoint_file, 'config.json')
-    else:
-        config_file = os.path.join(os.path.split(a.checkpoint_file)[0], 'config.json')
+    config_file = "utils/vocoder/config.json"
+    
     with open(config_file) as f:
         data = f.read()
     json_config = json.loads(data)

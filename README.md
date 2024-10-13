@@ -1,6 +1,6 @@
 # Parrot-TTS
 
-Parrot-TTS is a text-to-speech (TTS) system that utilizes a Transformer based sequence-to-sequence model to map character tokens to HuBERT quantized units and a modified HiFi-GAN vocoder for speech synthesis. This repository is an official impplementation of our EACL 2024 paper available at https://aclanthology.org/2024.findings-eacl.6/. This repository provides instructions for installation, demo execution, and training the TTS model on your own data.
+Parrot-TTS is a text-to-speech (TTS) system that utilizes a Transformer based sequence-to-sequence model to map character tokens to HuBERT quantized units and a modified HiFi-GAN vocoder for speech synthesis. This repository is an official impplementation of our EACL 2024 paper available at https://aclanthology.org/2024.findings-eacl.6/. This repository provides instructions for installation, demo execution, and training the TTS model on your own data. We have uploaded a few files generated with our model (trained with no transliteration for non-English characters) and are available at https://drive.google.com/file/d/1b4uoeRv106J-4NvzVnotfBiAuFz049_q/view?usp=sharing
 
 ## Libraries Installation
 
@@ -97,7 +97,7 @@ To train Parrot-TTS on your dataset, follow these steps (1-10):
 
 - Infer the vocoder on predictions from the TTE module:
     ```bash
-    python utils/vocoder/inference.py --checkpoint_file runs/vocoder/checkpoints --vc --input_code_file runs/TTE/predictions.txt --output_dir runs/vocoder/generations_tte
+    python utils/vocoder/inference.py --checkpoint_file runs/vocoder/checkpoints -n 100 --vc --input_code_file runs/TTE/predictions.txt --output_dir runs/vocoder/generations_tte
     ```
 
 ## Acknowledgements
